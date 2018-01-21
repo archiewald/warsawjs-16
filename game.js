@@ -1,3 +1,5 @@
+// VIEW
+
 class ViewComponent {
     constructor() {
         if (new.target === ViewComponent) { //check if constructor was not used directly
@@ -55,30 +57,62 @@ class GameBoard extends ViewComponent {
     }
 }
 
+// CONTROLLER
+
 class GameController {
-    constructor(boardView) {
-        this._boardView = boardView;
+    constructor(model) {
+        this._model = model;
     }
     handleCellClick(row, column) {
         console.log('handle click ' + row + ' ' + column);
-        this._boardView.setStateAt(row, column, 'miss');
+        this._model.fireAt(row, column);
     }
 }
+
+// MODEL
+
+class GameModel {
+    constructor() {
+        const boardSize = 10;
+        this.cells = {};
+        for (let i = 0; i < boardSize; i++){
+            for (let j = 0; j < boardSize; j++) {
+                const key = 'x'+ i + 'y' + j;
+                this.cells[key] = {
+                    hasShip: true,
+                    firedAt: false
+                }
+            }
+        }
+    }
+
+    fireAt(row, column) {
+        const coordinatesKey = 'x'+ row + 'y' + column;
+        const targetCell = this.cells[coordinatesKey]; 
+        if (targetCell.firedAt){
+            return;
+        }
+        targetCell.firedAt=true;
+        console.log("cell coordinates " + coordinatesKey + ' was shot!');
+    }
+}
+
+// APP INIT
 
 const game = document.getElementById('game');
 let board;
 let controller;
+let model;
 
 function handleCellClick(row, column) {
     controller.handleCellClick(row, column);
 }
 
 board = new GameBoard(handleCellClick);
-controller = new GameController(board);
+model = new GameModel();
+controller = new GameController(model);
+
 
 game.appendChild(board.getElement());
-
-board.setStateAt(5,5,'miss');
-board.setStateAt(5,6,'hit');
 
 
