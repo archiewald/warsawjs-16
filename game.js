@@ -15,9 +15,9 @@ function colorCell(event) {
     event.target.classList.add('clicked');
 }
 
-const cells = [cell, cell2]
+const cells = [cell, cell2];
 
-cells.forEach((cell) => cell.addEventListener('click', colorCell))
+cells.forEach((cell) => cell.addEventListener('click', colorCell));
 
 // for (let i = 0; i < cells.length; i++){
 //     cells[i].addEventListener('click', colorCell)
