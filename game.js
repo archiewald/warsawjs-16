@@ -1,5 +1,12 @@
-class GameCell {
+class ViewComponent {
+    getElement() {
+        return this._element;
+    }
+}
+
+class GameCell extends ViewComponent {
     constructor() { //constructor code runs on the creation of object
+        super(); // run cunstructor of parent class
         this._state = 'unknown'; // zmienna "prywatna", nie zmieniaj poza kodem
         this._element = document.createElement('td');
         const self = this;
@@ -15,10 +22,6 @@ class GameCell {
         }
         this._state = state;
         this._element.className = 'cell_' + state;
-    }
-
-    getElement() {
-        return this._element;
     }
 
 }
