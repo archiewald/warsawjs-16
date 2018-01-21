@@ -10,14 +10,13 @@ class ViewComponent {
 }
 
 class GameCell extends ViewComponent {
-    constructor() { //constructor code runs on the creation of object
+    constructor(handleCellClick, row, column) { //constructor code runs on the creation of object
         super(); // run cunstructor of parent class
         this._state = 'unknown'; // zmienna "prywatna", nie zmieniaj poza kodem
         this._element = document.createElement('td');
         const self = this;
         this._element.addEventListener('click', function() {
-            console.log('clicked!');
-            self.setState('miss');
+            handleCellClick(row,column);
         });
     }
 
@@ -31,7 +30,7 @@ class GameCell extends ViewComponent {
 }
 
 class GameBoard extends ViewComponent {
-    constructor() {
+    constructor(handleCellClick) {
         const boardSize = 10;
         super();
         this._state = 'unknown';
@@ -42,7 +41,7 @@ class GameBoard extends ViewComponent {
             const row = document.createElement('tr');
             for (let j = 0; j < boardSize; j++) {
                 const key = 'x'+ i + 'y' + j;
-                this.cells[key] = new GameCell;
+                this.cells[key] = new GameCell(handleCellClick, i, j);
                 row.appendChild(this.cells[key].getElement());
             }
             this._element.appendChild(row);
@@ -53,14 +52,33 @@ class GameBoard extends ViewComponent {
     setStateAt(row, column, state) {
         const key = 'x' + row + 'y' + column;
         this.cells[key].setState(state);
-        // get cell at given coordinates
-        // set state of obtained cell
     }
 }
 
+class GameController {
+    constructor(boardView) {
+        this._boardView = boardView;
+    }
+    handleCellClick(row, column) {
+        console.log('handle click ' + row + ' ' + column);
+        this._boardView.setStateAt(row, column, 'miss');
+    }
+}
 
-const board = new GameBoard;
+const game = document.getElementById('game');
+let board;
+let controller;
+
+function handleCellClick(row, column) {
+    controller.handleCellClick(row, column);
+}
+
+board = new GameBoard(handleCellClick);
+controller = new GameController(board);
+
+game.appendChild(board.getElement());
+
 board.setStateAt(5,5,'miss');
-const main = document.getElementById('game');
-main.appendChild(board.getElement());
+board.setStateAt(5,6,'hit');
+
 
