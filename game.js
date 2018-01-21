@@ -37,19 +37,30 @@ class GameBoard extends ViewComponent {
         this._state = 'unknown';
         this._element = document.createElement('table');
         const self = this;
+        this.cells = {};
         for (let i = 0; i < boardSize; i++){
             const row = document.createElement('tr');
             for (let j = 0; j < boardSize; j++) {
-                const cell = new GameCell;
-                row.appendChild(cell.getElement());
+                const key = 'x'+ i + 'y' + j;
+                this.cells[key] = new GameCell;
+                row.appendChild(this.cells[key].getElement());
             }
             this._element.appendChild(row);
         }
 
     }
+
+    setStateAt(row, column, state) {
+        const key = 'x' + row + 'y' + column;
+        this.cells[key].setState(state);
+        // get cell at given coordinates
+        // set state of obtained cell
+    }
 }
 
+
 const board = new GameBoard;
+board.setStateAt(5,5,'miss');
 const main = document.getElementById('game');
 main.appendChild(board.getElement());
 
