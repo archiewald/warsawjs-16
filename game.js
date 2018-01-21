@@ -1,4 +1,9 @@
 class ViewComponent {
+    constructor() {
+        if (new.target === ViewComponent) { //check if constructor was not used directly
+            throw new Error('Abstract class!'); 
+        }  
+    }
     getElement() {
         return this._element;
     }
@@ -23,11 +28,28 @@ class GameCell extends ViewComponent {
         this._state = state;
         this._element.className = 'cell_' + state;
     }
-
 }
 
-const cell1 = new GameCell;
-const gameElement = document.getElementById('game');
-const row = document.createElement('tr');
-gameElement.appendChild(row);
-row.appendChild(cell1.getElement());
+class GameBoard extends ViewComponent {
+    constructor() {
+        const boardSize = 10;
+        super();
+        this._state = 'unknown';
+        this._element = document.createElement('table');
+        const self = this;
+        for (let i = 0; i < boardSize; i++){
+            const row = document.createElement('tr');
+            for (let j = 0; j < boardSize; j++) {
+                const cell = new GameCell;
+                row.appendChild(cell.getElement());
+            }
+            this._element.appendChild(row);
+        }
+
+    }
+}
+
+const board = new GameBoard;
+const main = document.getElementById('game');
+main.appendChild(board.getElement());
+
