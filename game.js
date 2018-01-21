@@ -1,29 +1,30 @@
-const gameElement = document.getElementById("game");
-const row = document.createElement('tr');
-const cell = document.createElement('td');
-const cell2 = document.createElement('td');
+class GameCell {
+    constructor() { //constructor code runs on the creation of object
+        this._state = 'unknown'; // zmienna "prywatna", nie zmieniaj poza kodem
+        this._element = document.createElement('td');
+        const self = this;
+        this._element.addEventListener('click', function() {
+            console.log('clicked!');
+            self.setState('miss');
+        });
+    }
 
-row.appendChild(cell);
-row.appendChild(cell2);
+    setState(state) {
+        if (state !== 'unknown' && state !== 'miss' && state !== 'hit'){
+            throw new Error('Invalid state!')
+        }
+        this._state = state;
+        this._element.className = 'cell_' + state;
+    }
 
-gameElement.appendChild(row);
+    getElement() {
+        return this._element;
+    }
 
-//controler pobiera input od uzytkownika i przekazuje na view
-
-function colorCell(event) {
-    console.log(event);
-    event.target.classList.add('clicked');
 }
 
-const cells = [cell, cell2];
-
-cells.forEach((cell) => cell.addEventListener('click', colorCell));
-
-// for (let i = 0; i < cells.length; i++){
-//     cells[i].addEventListener('click', colorCell)
-// }
-
-
-// cell.addEventListener('click', colorCell);
-// cell2.addEventListener('click', colorCell);
-
+const cell1 = new GameCell;
+const gameElement = document.getElementById('game');
+const row = document.createElement('tr');
+gameElement.appendChild(row);
+row.appendChild(cell1.getElement());
