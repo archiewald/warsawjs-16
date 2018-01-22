@@ -1,3 +1,8 @@
+// TO DO counter
+// add counter view, event observer,
+// https://github.com/rkaw92
+
+
 // VIEW
 
 class ViewComponent {
