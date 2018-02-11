@@ -57,6 +57,19 @@ class GameBoard extends ViewComponent {
     }
 }
 
+class ScoreCounter extends ViewComponent {
+    constructor() {
+        super();
+        this._element = document.createElement('p');
+        this._element.textContent = '0';
+        console.log('scorecounter created!');
+    }
+
+    setScore(score) {
+        this._element.textContent = String(score);
+    }
+}
+
 // CONTROLLER
 
 class GameController {
@@ -76,6 +89,7 @@ class GameModel {
         const _boardSize = 10;
         this._cells = {};
         this._observers = [];
+        this._score = 0;
         for (let i = 0; i < _boardSize; i++){
             for (let j = 0; j < _boardSize; j++) {
                 const key = 'x'+ i + 'y' + j;
@@ -100,10 +114,18 @@ class GameModel {
         }
         targetCell.firedAt=true;
         const result = targetCell.hasShip ? 'hit' : 'miss';
+        if (result === 'hit') {
+            this._score += 1;
+        }
         console.log("cell coordinates " + coordinatesKey + ' was shot!');
         this._observers.forEach(function(observer) {
             observer('firedAt', {result, row, column})
-        })
+        });
+        if (result === 'hit') {
+            this._observers.forEach(function(observer) {
+                observer('scored', {score: this._score});
+            }, this);
+        }
     }
 
     addObserver(observerFunction) {
@@ -117,6 +139,7 @@ const game = document.getElementById('game');
 let board;
 let controller;
 let model;
+const counter = new ScoreCounter();
 
 function handleCellClick(row, column) {
     controller.handleCellClick(row, column);
@@ -129,11 +152,14 @@ model.addObserver(function(eventType, params) {
         case 'firedAt' :
             board.setStateAt(params.row, params.column, params.result);
             break;
+        case 'scored' :
+            counter.setScore(params.score);
+            break;
     }
 })
+
 controller = new GameController(model);
-
-
 game.appendChild(board.getElement());
+game.appendChild(counter.getElement());
 
 
