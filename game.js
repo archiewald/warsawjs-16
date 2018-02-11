@@ -23,7 +23,7 @@ class GameCell extends ViewComponent {
     }
 
     setState(state) {
-        if (state !== 'unknown' && state !== 'miss' && state !== 'hit'){
+        if (state !== 'unknown' && state !== 'miss' && state !== 'hit' && state !== 'mark'){
             throw new Error('Invalid state!')
         }
         this._state = state;
@@ -55,6 +55,12 @@ class GameBoard extends ViewComponent {
         const key = 'x' + row + 'y' + column;
         this.cells[key].setState(state);
     }
+
+    cleanBoard() {
+        Object.keys(this.cells).forEach(key => {
+            this.cells[key].setState('unknown');
+        })
+    }
 }
 
 class ScoreCounter extends ViewComponent {
@@ -78,7 +84,9 @@ class GameController {
     }
     handleCellClick(row, column) {
         console.log('handle click ' + row + ' ' + column);
-        this._model.fireAt(row, column);
+        if (this._model.getMode() === 'markShips'){
+            this._model.markShip(row, column);
+        } else  this._model.fireAt(row, column);
     }
 }
 
@@ -90,19 +98,46 @@ class GameModel {
         this._cells = {};
         this._observers = [];
         this._score = 0;
+        this._markedShips = 0;
+        this._shipsNumber = 12;
+        this._mode = 'markShips';
         for (let i = 0; i < _boardSize; i++){
             for (let j = 0; j < _boardSize; j++) {
                 const key = 'x'+ i + 'y' + j;
                 this._cells[key] = {
-                    hasShip: true,
-                    firedAt: false
-                }
-                this._cells['x1y1'] = {
                     hasShip: false,
                     firedAt: false
                 }
-
+                this._cells['x1y1'] = {
+                    hasShip: true,
+                    firedAt: false
+                }
             }
+        }
+    }
+
+    getMode() {
+        return this._mode;
+    }
+
+    markShip(row, column) {
+        const coordinatesKey = 'x'+ row + 'y' + column;
+        const targetCell = this._cells[coordinatesKey]; 
+        if (targetCell.hasShip){
+            console.log('This one is already marked')
+            return;
+        }
+        targetCell.hasShip = true;
+        this._markedShips += 1;
+        console.log('You marked ship of coordinates ' + coordinatesKey);
+        this._observers.forEach(function(observer) {
+            observer('shipMarked', {row, column})
+        });
+        if (this._markedShips === this._shipsNumber) {
+            this._mode = 'fireShips';
+            this._observers.forEach(function(observer) {
+                observer('allShipsMarked');
+            }, this);
         }
     }
 
@@ -151,6 +186,12 @@ model.addObserver(function(eventType, params) {
     switch (eventType) {
         case 'firedAt' :
             board.setStateAt(params.row, params.column, params.result);
+            break;
+        case 'shipMarked' :
+            board.setStateAt(params.row, params.column, 'mark');
+            break;
+        case 'allShipsMarked' :
+            board.cleanBoard();
             break;
         case 'scored' :
             counter.setScore(params.score);
