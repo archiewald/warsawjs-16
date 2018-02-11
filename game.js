@@ -63,16 +63,31 @@ class GameBoard extends ViewComponent {
     }
 }
 
-class ScoreCounter extends ViewComponent {
+class GameCounter extends ViewComponent {
     constructor() {
         super();
         this._element = document.createElement('p');
-        this._element.textContent = '0';
-        console.log('scorecounter created!');
+        this._status = document.createElement('span');
+        this._value = document.createElement('span');
+        this._outOfValue = document.createElement('span');
+        this._status.textContent = 'Choose your ships position. ';
+        this._value.textContent = '0';
+        this._element.appendChild(this._status);
+        this._element.appendChild(this._value);
+        this._element.appendChild(this._outOfValue);
     }
 
-    setScore(score) {
-        this._element.textContent = String(score);
+    setValue(score) {
+        this._value.textContent = String(score);
+    }
+    setStatus(status) {
+        this._status.textContent = status;
+    }
+    setOutOfValue(outOfValue){
+        this._outOfValue.textContent = outOfValue;
+    }
+    setWinStatus(){
+        this._element.textContent = "You cheeky bastard, you did it! Congrats ;*"
     }
 }
 
@@ -120,6 +135,10 @@ class GameModel {
         return this._mode;
     }
 
+    getShipsNumber() {
+        return this._shipsNumber;
+    }
+
     markShip(row, column) {
         const coordinatesKey = 'x'+ row + 'y' + column;
         const targetCell = this._cells[coordinatesKey]; 
@@ -129,9 +148,10 @@ class GameModel {
         }
         targetCell.hasShip = true;
         this._markedShips += 1;
+        const markedShips = this._markedShips;
         console.log('You marked ship of coordinates ' + coordinatesKey);
         this._observers.forEach(function(observer) {
-            observer('shipMarked', {row, column})
+            observer('shipMarked', {row, column, markedShips})
         });
         if (this._markedShips === this._shipsNumber) {
             this._mode = 'fireShips';
@@ -151,6 +171,11 @@ class GameModel {
         const result = targetCell.hasShip ? 'hit' : 'miss';
         if (result === 'hit') {
             this._score += 1;
+            if (this._score === this._shipsNumber){
+                this._observers.forEach(function(observer) {
+                    observer('win')
+                });
+            }
         }
         console.log("cell coordinates " + coordinatesKey + ' was shot!');
         this._observers.forEach(function(observer) {
@@ -174,7 +199,7 @@ const game = document.getElementById('game');
 let board;
 let controller;
 let model;
-const counter = new ScoreCounter();
+const counter = new GameCounter();
 
 function handleCellClick(row, column) {
     controller.handleCellClick(row, column);
@@ -182,6 +207,7 @@ function handleCellClick(row, column) {
 
 board = new GameBoard(handleCellClick);
 model = new GameModel();
+counter.setOutOfValue('/' + model.getShipsNumber());
 model.addObserver(function(eventType, params) {
     switch (eventType) {
         case 'firedAt' :
@@ -189,12 +215,18 @@ model.addObserver(function(eventType, params) {
             break;
         case 'shipMarked' :
             board.setStateAt(params.row, params.column, 'mark');
+            counter.setValue(params.markedShips);
             break;
         case 'allShipsMarked' :
             board.cleanBoard();
+            counter.setStatus('Shoot the ships! ')
+            counter.setValue('0')
             break;
         case 'scored' :
-            counter.setScore(params.score);
+            counter.setValue(params.score);
+            break;
+        case 'win' :
+            counter.setWinStatus();
             break;
     }
 })
