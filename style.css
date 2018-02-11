@@ -9,3 +9,11 @@ td.cell_miss {
 td.cell_hit {
     background-color: red;
 }
+
+td.cell_mark {
+    text-align: center;
+}
+
+td.cell_mark::after {
+    content:"X"
+}
