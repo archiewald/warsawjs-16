@@ -48,7 +48,6 @@ class GameBoard extends ViewComponent {
             }
             this._element.appendChild(row);
         }
-
     }
 
     setStateAt(row, column, state) {
@@ -93,21 +92,28 @@ class GameCounter extends ViewComponent {
 
 // CONTROLLER
 
-class GameController {
-    constructor(model) {
-        this._model = model;
+class BoardController {
+    constructor(boardModel) {
+        this._boardModel = boardModel;
     }
     handleCellClick(row, column) {
         console.log('handle click ' + row + ' ' + column);
-        if (this._model.getMode() === 'markShips'){
-            this._model.markShip(row, column);
-        } else  this._model.fireAt(row, column);
+        if (this._boardModel.getMode() === 'markShips'){
+            this._boardModel.markShip(row, column);
+        } else  this._boardModel.fireAt(row, column);
     }
 }
 
 // MODEL
 
 class GameModel {
+    constructor(board1, board2) {
+        this.board1=board1;
+        this.board2=board2;
+    }
+}
+
+class BoardModel {
     constructor() {
         const _boardSize = 10;
         this._cells = {};
@@ -192,43 +198,79 @@ class GameModel {
 // APP INIT
 
 const game = document.getElementById('game');
-let board;
-let controller;
-let model;
-const counter = new GameCounter();
+let board1;
+let board2;
+let controller1;
+let controller2;
+let boardModel1;
+let boardModel2;
+const counter1 = new GameCounter();
+const counter2 = new GameCounter();
 
-function handleCellClick(row, column) {
-    controller.handleCellClick(row, column);
+function handleCellClick1(row, column) {
+    controller1.handleCellClick(row, column);
+}
+function handleCellClick2(row, column) {
+    controller2.handleCellClick(row, column);
 }
 
-board = new GameBoard(handleCellClick);
-model = new GameModel();
-counter.setOutOfValue('/' + model.getShipsNumber());
-model.addObserver(function(eventType, params) {
+board1 = new GameBoard(handleCellClick1);
+board2 = new GameBoard(handleCellClick2);
+boardModel1 = new BoardModel();
+boardModel2 = new BoardModel();
+gameModel = new GameModel(boardModel1,boardModel2);
+counter1.setOutOfValue('/' + gameModel.board1.getShipsNumber());
+counter2.setOutOfValue('/' + gameModel.board1.getShipsNumber());
+gameModel.board1.addObserver(function(eventType, params) {
     switch (eventType) {
         case 'firedAt' :
-            board.setStateAt(params.row, params.column, params.result);
+            board1.setStateAt(params.row, params.column, params.result);
             break;
         case 'shipMarked' :
-            board.setStateAt(params.row, params.column, 'mark');
-            counter.setValue(params.markedShips);
+            board1.setStateAt(params.row, params.column, 'mark');
+            counter1.setValue(params.markedShips);
             break;
         case 'allShipsMarked' :
-            board.cleanBoard();
-            counter.setStatus('Shoot the ships! ')
-            counter.setValue('0')
+            board1.cleanBoard();
+            counter1.setStatus('Shoot the ships! ')
+            counter1.setValue('0')
             break;
         case 'scored' :
-            counter.setValue(params.score);
+            counter1.setValue(params.score);
             break;
         case 'win' :
-            counter.setWinStatus();
+            counter1.setWinStatus();
+            break;
+    }
+})
+gameModel.board2.addObserver(function(eventType, params) {
+    switch (eventType) {
+        case 'firedAt' :
+            board2.setStateAt(params.row, params.column, params.result);
+            break;
+        case 'shipMarked' :
+            board2.setStateAt(params.row, params.column, 'mark');
+            counter2.setValue(params.markedShips);
+            break;
+        case 'allShipsMarked' :
+            board2.cleanBoard();
+            counter2.setStatus('Shoot the ships! ')
+            counter2.setValue('0')
+            break;
+        case 'scored' :
+            counter2.setValue(params.score);
+            break;
+        case 'win' :
+            counter2.setWinStatus();
             break;
     }
 })
 
-controller = new GameController(model);
-game.appendChild(board.getElement());
-game.appendChild(counter.getElement());
+controller1 = new BoardController(gameModel.board1);
+controller2 = new BoardController(gameModel.board2);
+game.appendChild(board1.getElement());
+game.appendChild(counter1.getElement());
+game.appendChild(board2.getElement());
+game.appendChild(counter2.getElement());
 
 
