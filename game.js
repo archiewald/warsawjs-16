@@ -1,8 +1,3 @@
-// TO DO counter
-// add counter view, event observer,
-// https://github.com/rkaw92
-
-
 // VIEW
 
 class ViewComponent {
@@ -126,10 +121,6 @@ class GameModel {
                 const key = 'x'+ i + 'y' + j;
                 this._cells[key] = {
                     hasShip: false,
-                    firedAt: false
-                }
-                this._cells['x1y1'] = {
-                    hasShip: true,
                     firedAt: false
                 }
             }
